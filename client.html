@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aircraft Engines</title>
+</head>
+<body>
+    <h1>Aircraft Engines</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Manufacture Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="engine-list">
+        </tbody>
+    </table>
+    <div>
+        <label for="newManufactureDate">New Manufacture Date:</label>
+        <input type="date" id="newManufactureDate">
+        <button onclick="updateManufactureDate()">Update</button>
+    </div>
+
+    <script>
+        function fetchEngines() {
+            fetch('/engines')
+                .then(response => response.json())
+                .then(data => {
+                    const engineList = document.getElementById('engine-list');
+                    engineList.innerHTML = '';
+                    data.engines.forEach(engine => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${engine.id}</td>
+                            <td>${engine.name}</td>
+                            <td>${engine.manufacture_date}</td>
+                            <td><button onclick="setEngineId(${engine.id})">Update Date</button></td>
+                        `;
+                        engineList.appendChild(row);
+                    });
+                });
+        }
+
+        function updateManufactureDate() {
+            const engineId = window.selectedEngineId;
+            const newManufactureDate = document.getElementById('newManufactureDate').value;
+            fetch(`/engines/${engineId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'manufacture_date': newManufactureDate })
+            })
+            .then(response => {
+                if (response.ok) {
+                    fetchEngines();
+                } else {
+                    alert('Failed to update the manufacture date.');
+                }
+            });
+        }
+
+        function setEngineId(id) {
+            window.selectedEngineId = id;
+        }
+
+        fetchEngines();
+    </script>
+</body>
+</html>
